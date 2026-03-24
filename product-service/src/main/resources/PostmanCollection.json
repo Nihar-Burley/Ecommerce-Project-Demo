@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "Product Service APIs",
+    "_postman_id": "12345-abcde-67890",
+    "description": "Product Service API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+
+    {
+      "name": "Get All Products",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products"]
+        }
+      }
+    },
+
+    {
+      "name": "Get Product By ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products", "1"]
+        }
+      }
+    },
+
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Product\",\n  \"description\": \"Test Description\",\n  \"price\": 1000,\n  \"stock\": 10\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products"]
+        }
+      }
+    },
+
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Product\",\n  \"description\": \"Updated Description\",\n  \"price\": 1200,\n  \"stock\": 5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products", "1"]
+        }
+      }
+    },
+
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products", "1"]
+        }
+      }
+    }
+
+  ]
+}
