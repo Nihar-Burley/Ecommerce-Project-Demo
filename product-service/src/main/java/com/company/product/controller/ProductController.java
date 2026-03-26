@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 
 @RestController
@@ -81,4 +82,39 @@ public class ProductController {
         log.info("API: Delete product with id: {}", id);
         return productService.deleteProduct(id);
     }
+
+    @Operation(summary = "Reduce product stock",
+            description = "Reduce stock of a product by given quantity")
+    @ApiResponse(responseCode = "204", description = "Stock reduced successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid quantity or insufficient stock")
+    @ApiResponse(responseCode = "404", description = "Product not found")
+    @PutMapping("/{id}/reduce/{qty}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> reduceStock(
+            @PathVariable Long id,
+            @PathVariable @Min(1) int qty) {
+
+        log.info("API: Reduce stock | productId={} qty={}", id, qty);
+
+        return productService.reduceStock(id, qty);
+    }
+
+    @Operation(summary = "Increase product stock",
+            description = "Increase stock of a product by given quantity")
+    @ApiResponse(responseCode = "204", description = "Stock increased successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid quantity")
+    @ApiResponse(responseCode = "404", description = "Product not found")
+    @PutMapping("/{id}/increase/{qty}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> increaseStock(
+            @PathVariable Long id,
+            @PathVariable @Min(1) int qty) {
+
+        log.info("API: Increase stock | productId={} qty={}", id, qty);
+
+        return productService.increaseStock(id, qty);
+    }
+
+
+
 }

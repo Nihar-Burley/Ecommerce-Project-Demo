@@ -1,0 +1,18 @@
+package com.company.cart_service.service;
+
+
+import com.company.cart_service.dto.request.AddToCartRequest;
+import com.company.cart_service.dto.request.UpdateCartRequest;
+import com.company.cart_service.dto.response.CartResponse;
+import reactor.core.publisher.Mono;
+
+public interface CartService {
+
+    Mono<CartResponse> addToCart(AddToCartRequest request);
+
+    Mono<CartResponse> updateCart(UpdateCartRequest request);
+
+    Mono<Void> removeItem(String userId, Long productId);
+
+    Mono<CartResponse> getCart(String userId);
+}

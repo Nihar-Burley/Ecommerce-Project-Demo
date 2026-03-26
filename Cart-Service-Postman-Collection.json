@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Cart Service Collection",
+    "_postman_id": "cart-service-collection-001",
+    "description": "Cart Service APIs with Product Service integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    }
+  ],
+  "item": [
+    {
+      "name": "Add to Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user123\",\n  \"productId\": 1,\n  \"quantity\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/cart/add",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "add"]
+        }
+      }
+    },
+    {
+      "name": "Update Cart",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user123\",\n  \"productId\": 1,\n  \"quantity\": 5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/cart/update",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "update"]
+        }
+      }
+    },
+    {
+      "name": "Remove Item",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/cart/remove?userId=user123&productId=1",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "remove"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "user123"
+            },
+            {
+              "key": "productId",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Cart",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/cart/user123",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "user123"]
+        }
+      }
+    }
+  ]
+}

@@ -15,4 +15,8 @@ public interface ProductService {
     Mono<ProductResponse> updateProduct(Long id, ProductRequest request);
 
     Mono<Void> deleteProduct(Long id);
+
+    Mono<Void> reduceStock(Long productId, int quantity);
+
+    Mono<Void> increaseStock(Long productId, int quantity);
 }

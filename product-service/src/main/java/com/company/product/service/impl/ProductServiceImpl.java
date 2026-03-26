@@ -13,13 +13,15 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 import static com.company.product.util.Constants.PRODUCT_NOT_FOUND;
 
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProductServiceImpl     implements ProductService {
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
 
@@ -73,5 +75,47 @@ public class ProductServiceImpl     implements ProductService {
                 .switchIfEmpty(Mono.error(
                         new ResourceNotFoundException(PRODUCT_NOT_FOUND+ id)))
                 .flatMap(repository::delete);
+    }
+
+
+    @Override
+    public Mono<Void> reduceStock(Long productId, int quantity) {
+
+        log.info("Reducing stock | productId={} quantity={}", productId, quantity);
+
+        return repository.findById(productId)
+                .switchIfEmpty(Mono.error(
+                        new ResourceNotFoundException(PRODUCT_NOT_FOUND + productId)))
+                .flatMap(product -> {
+
+                    if (product.getStock() < quantity) {
+                        return Mono.error(new IllegalArgumentException("Insufficient stock"));
+                    }
+
+                    product.setStock(product.getStock() - quantity);
+                    product.setUpdatedAt(LocalDateTime.now());
+
+                    return repository.save(product);
+                })
+                .then();
+    }
+
+
+    @Override
+    public Mono<Void> increaseStock(Long productId, int quantity) {
+
+        log.info("Increasing stock | productId={} quantity={}", productId, quantity);
+
+        return repository.findById(productId)
+                .switchIfEmpty(Mono.error(
+                        new ResourceNotFoundException(PRODUCT_NOT_FOUND + productId)))
+                .flatMap(product -> {
+
+                    product.setStock(product.getStock() + quantity);
+                    product.setUpdatedAt(LocalDateTime.now());
+
+                    return repository.save(product);
+                })
+                .then();
     }
 }

@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Product Service APIs",
-    "_postman_id": "12345-abcde-67890",
-    "description": "Product Service API Collection",
+    "name": "Product Service APIs (Production)",
+    "_postman_id": "prod-12345",
+    "description": "Product Service including CRUD + Stock APIs",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -40,14 +40,11 @@
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Test Product\",\n  \"description\": \"Test Description\",\n  \"price\": 1000,\n  \"stock\": 10\n}"
+          "raw": "{\n  \"name\": \"MacBook Pro\",\n  \"description\": \"Apple laptop\",\n  \"price\": 150000,\n  \"stock\": 5\n}"
         },
         "url": {
           "raw": "http://localhost:8081/api/v1/products",
@@ -64,14 +61,11 @@
       "request": {
         "method": "PUT",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Updated Product\",\n  \"description\": \"Updated Description\",\n  \"price\": 1200,\n  \"stock\": 5\n}"
+          "raw": "{\n  \"name\": \"Updated Product\",\n  \"description\": \"Updated Desc\",\n  \"price\": 120000,\n  \"stock\": 3\n}"
         },
         "url": {
           "raw": "http://localhost:8081/api/v1/products/1",
@@ -93,6 +87,34 @@
           "host": ["localhost"],
           "port": "8081",
           "path": ["api", "v1", "products", "1"]
+        }
+      }
+    },
+
+    {
+      "name": "Reduce Stock",
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products/1/reduce/2",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products", "1", "reduce", "2"]
+        }
+      }
+    },
+
+    {
+      "name": "Increase Stock",
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "http://localhost:8081/api/v1/products/1/increase/3",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "products", "1", "increase", "3"]
         }
       }
     }

@@ -5,6 +5,11 @@ POST   /api/v1/products
 PUT    /api/v1/products/{id}
 DELETE /api/v1/products/{id}
 
+
+GET    /api/v1/products/{id}
+PUT    /api/v1/products/{id}/reduce/{qty}
+PUT    /api/v1/products/{id}/increase/{qty}
+
 http://localhost:8081/swagger-ui.html
 
 

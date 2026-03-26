@@ -1,5 +1,4 @@
 package com.company.product.exception;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,17 +8,25 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    //Resource Not Found
+    // RESOURCE NOT FOUND
     @ExceptionHandler(ResourceNotFoundException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleNotFound(ResourceNotFoundException ex) {
+
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("NOT_FOUND", ex.getMessage())));
+                .body(ErrorResponse.builder()
+                        .message(ex.getMessage())
+                        .errorCode("NOT_FOUND")
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
 
-    //Validation Errors
+    // VALIDATION
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleValidation(WebExchangeBindException ex) {
 
@@ -30,9 +37,15 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
 
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("VALIDATION_ERROR", errorMessage)));
+                .body(ErrorResponse.builder()
+                        .message(errorMessage)
+                        .errorCode("VALIDATION_ERROR")
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
-    
+
+    // VALIDATION
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleValidation(MethodArgumentNotValidException ex) {
 
@@ -44,27 +57,50 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
 
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("VALIDATION_ERROR", errorMessage)));
+                .body(ErrorResponse.builder()
+                        .message(errorMessage)
+                        .errorCode("VALIDATION_ERROR")
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
 
-    //Bad Request
+    //  BAD REQUEST
     @ExceptionHandler(IllegalArgumentException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleBadRequest(IllegalArgumentException ex) {
+
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("BAD_REQUEST", ex.getMessage())));
+                .body(ErrorResponse.builder()
+                        .message(ex.getMessage())
+                        .errorCode("BAD_REQUEST")
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
 
-    //Database Errors
+    // DATABASE ERROR
     @ExceptionHandler(DataAccessException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleDatabaseError(DataAccessException ex) {
+
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("DB_ERROR", "Database error occurred")));
+                .body(ErrorResponse.builder()
+                        .message("Database error occurred")
+                        .errorCode("DB_ERROR")
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
 
-    //Generic Exception
+    // ENERIC ERROR
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<ErrorResponse>> handleGeneric(Exception ex) {
+
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_ERROR", ex.getMessage())));
+                .body(ErrorResponse.builder()
+                        .message(ex.getMessage())
+                        .errorCode("INTERNAL_ERROR")
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()));
     }
 }
