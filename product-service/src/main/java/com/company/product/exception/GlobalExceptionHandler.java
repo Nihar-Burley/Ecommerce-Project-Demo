@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
 @RestControllerAdvice
@@ -19,6 +20,19 @@ public class GlobalExceptionHandler {
     }
 
     //Validation Errors
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleValidation(WebExchangeBindException ex) {
+
+        String errorMessage = ex.getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("Validation error");
+
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("VALIDATION_ERROR", errorMessage)));
+    }
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleValidation(MethodArgumentNotValidException ex) {
 

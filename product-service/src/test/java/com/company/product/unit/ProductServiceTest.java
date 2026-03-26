@@ -52,7 +52,7 @@ class ProductServiceTest {
         request.setPrice(80000.0);
         request.setStock(10);
     }
-    
+
     @Test
     void shouldReturnAllProducts() {
         when(repository.findAll()).thenReturn(Flux.just(product));
