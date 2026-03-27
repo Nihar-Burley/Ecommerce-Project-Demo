@@ -12,6 +12,8 @@ PUT    /api/v1/products/{id}/increase/{qty}
 
 http://localhost:8081/swagger-ui.html
 
+http://localhost:8761/
+
 
 Cart Service
 POST   /api/v1/cart/items
