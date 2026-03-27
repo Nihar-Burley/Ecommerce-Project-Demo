@@ -20,7 +20,7 @@ public class ProductClient {
         log.info("Calling Product Service to fetch product | productId={}", productId);
 
         return productWebClient.get()
-                .uri("/products/{id}", productId)
+                .uri("/api/v1/products/{id}", productId)
                 .retrieve()
                 .bodyToMono(ProductResponse.class)
                 .doOnNext(p -> log.debug("Product received: {}", p))
@@ -34,7 +34,7 @@ public class ProductClient {
                 productId, quantity);
 
         return productWebClient.put()
-                .uri("/products/{id}/reduce/{qty}", productId, quantity)
+                .uri("/api/v1/products/{id}/reduce/{qty}", productId, quantity)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .doOnSuccess(v -> log.debug("Stock reduced successfully"))
@@ -48,7 +48,7 @@ public class ProductClient {
                 productId, quantity);
 
         return productWebClient.put()
-                .uri("/products/{id}/increase/{qty}", productId, quantity)
+                .uri("/api/v1/products/{id}/increase/{qty}", productId, quantity)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .doOnSuccess(v -> log.debug("Stock increased successfully"))

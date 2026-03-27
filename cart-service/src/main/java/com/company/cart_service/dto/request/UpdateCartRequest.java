@@ -3,6 +3,7 @@ package com.company.cart_service.dto.request;
 import lombok.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +14,7 @@ public class UpdateCartRequest {
     @NotBlank(message = "UserId is required")
     private String userId;
 
-    @NotBlank(message = "ProductId is required")
+    @NotNull(message = "ProductId is required")
     private Long productId;
 
     @Min(value = 0, message = "Quantity cannot be negative")

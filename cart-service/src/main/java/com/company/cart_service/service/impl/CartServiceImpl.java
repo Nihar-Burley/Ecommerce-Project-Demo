@@ -119,9 +119,9 @@ public class CartServiceImpl implements CartService {
 
     private Mono<ProductResponse> validateAndReduceStock(ProductResponse product, int quantity) {
 
-        if (product.getQuantity() < quantity) {
+        if (product.getStock() < quantity) {
             log.error("Insufficient stock | productId={} available={} requested={}",
-                    product.getId(), product.getQuantity(), quantity);
+                    product.getId(), product.getStock(), quantity);
             return Mono.error(new InsufficientStockException());
         }
 
