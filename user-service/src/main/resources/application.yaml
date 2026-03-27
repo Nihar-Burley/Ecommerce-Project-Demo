@@ -1,3 +1,41 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: user-service
+
+  r2dbc:
+    url: r2dbc:h2:mem:///userdb
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    root: INFO
+    com.company.user: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
