@@ -52,6 +52,7 @@ public class ProductController {
     @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponse(responseCode = "201", description = "Product created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ProductResponse> createProduct(

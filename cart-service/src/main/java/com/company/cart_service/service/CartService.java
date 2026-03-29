@@ -12,7 +12,7 @@ public interface CartService {
 
     Mono<CartResponse> updateCart(UpdateCartRequest request);
 
-    Mono<Void> removeItem(String userId, Long productId);
+    Mono<Void> removeItem(Long userId, Long productId);
 
-    Mono<CartResponse> getCart(String userId);
+    Mono<CartResponse> getCart(Long userId);
 }

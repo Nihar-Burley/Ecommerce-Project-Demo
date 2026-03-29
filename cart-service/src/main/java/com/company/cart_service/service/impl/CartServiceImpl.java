@@ -80,7 +80,7 @@ public class CartServiceImpl implements CartService {
 
     // ================= REMOVE ITEM =================
     @Override
-    public Mono<Void> removeItem(String userId, Long productId) {
+    public Mono<Void> removeItem(Long userId, Long productId) {
 
         log.info("START removeItem | userId={} productId={}", userId, productId);
 
@@ -106,7 +106,7 @@ public class CartServiceImpl implements CartService {
 
     // ================= VIEW CART =================
     @Override
-    public Mono<CartResponse> getCart(String userId) {
+    public Mono<CartResponse> getCart(Long userId) {
 
         log.info("Fetching cart | userId={}", userId);
 
@@ -131,7 +131,7 @@ public class CartServiceImpl implements CartService {
                 .thenReturn(product);
     }
 
-    private Mono<Cart> createCart(String userId) {
+    private Mono<Cart> createCart(Long userId) {
         return cartRepository.save(Cart.builder().userId(userId).build())
                 .doOnSuccess(c -> log.info("New cart created | cartId={}", c.getId()));
     }

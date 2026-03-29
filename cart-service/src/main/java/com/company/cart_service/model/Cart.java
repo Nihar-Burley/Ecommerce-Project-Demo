@@ -17,5 +17,5 @@ public class Cart {
     @Id
     private Long id;
 
-    private String userId;
+    private Long userId;
 }

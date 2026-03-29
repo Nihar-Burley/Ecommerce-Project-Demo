@@ -2,7 +2,6 @@ package com.company.cart_service.dto.request;
 
 import lombok.*;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -11,8 +10,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class UpdateCartRequest {
 
-    @NotBlank(message = "UserId is required")
-    private String userId;
+    private Long userId;
 
     @NotNull(message = "ProductId is required")
     private Long productId;

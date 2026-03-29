@@ -3,8 +3,10 @@ package com.company.cart_service.controller;
 import com.company.cart_service.dto.request.AddToCartRequest;
 import com.company.cart_service.dto.request.UpdateCartRequest;
 import com.company.cart_service.dto.response.CartResponse;
+import com.company.cart_service.exception.CustomException;
 import com.company.cart_service.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,11 +30,21 @@ public class CartController {
     @Operation(summary = "Add item to cart", description = "Add a product to user's cart")
     @ApiResponse(responseCode = "200", description = "Item added to cart successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @PostMapping("/add")
     public Mono<CartResponse> addToCart(
+            @Parameter(description = "User ID", required = true)
+            @RequestHeader("X-User-Id") Long userId,
+
+            @Parameter(description = "User Role", required = true)
+            @RequestHeader("X-User-Role") String role,
+
             @Valid @RequestBody AddToCartRequest request) {
 
-        log.info("Received request to add item to cart for user {}", request.getUserId());
+        log.info("API: Add to cart | userId={} role={}", userId, role);
+
+        validateUser(role);
+        request.setUserId(Long.valueOf(userId));
         return cartService.addToCart(request);
     }
 
@@ -41,24 +53,36 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Cart updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @ApiResponse(responseCode = "404", description = "Cart or product not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @PutMapping("/update")
     public Mono<CartResponse> updateCart(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Role") String role,
             @Valid @RequestBody UpdateCartRequest request) {
 
-        log.info("Received request to update cart for user {}", request.getUserId());
+        log.info("API: Update cart | userId={} role={}", userId, role);
+
+        validateUser(role);
+
+        request.setUserId(Long.valueOf(userId));
         return cartService.updateCart(request);
     }
 
     @Operation(summary = "Remove item from cart", description = "Remove a specific product from user's cart")
     @ApiResponse(responseCode = "204", description = "Item removed successfully")
     @ApiResponse(responseCode = "404", description = "Cart or product not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @DeleteMapping("/remove")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> removeItem(
-            @RequestParam String userId,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
             @RequestParam Long productId) {
 
-        log.info("Received request to remove item {} from user {}", productId, userId);
+        log.info("API: Remove item | userId={} productId={}", userId, productId);
+
+        validateUser(role);
+
         return cartService.removeItem(userId, productId);
     }
 
@@ -67,10 +91,22 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Cart retrieved successfully",
             content = @Content(schema = @Schema(implementation = CartResponse.class)))
     @ApiResponse(responseCode = "404", description = "Cart not found")
-    @GetMapping("/{userId}")
-    public Mono<CartResponse> getCart(@PathVariable String userId) {
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @GetMapping
+    public Mono<CartResponse> getCart(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
 
-        log.info("Fetching cart for user {}", userId);
+        log.info("API: Get cart | userId={} role={}", userId, role);
+
+        validateUser(role);
+
         return cartService.getCart(userId);
+    }
+
+    private void validateUser(String role) {
+        if (!"USER".equals(role) && !"ADMIN".equals(role)) {
+            throw new CustomException("Access Denied", "FORBIDDEN", 403);
+        }
     }
 }
