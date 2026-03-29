@@ -9,15 +9,21 @@ spring:
     gateway:
       routes:
 
+        # USER SERVICE
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/v1/users/**
+
         # PRODUCT SERVICE
         - id: product-service
-          uri: lb://product-service
+          uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/api/v1/products/**
 
         # CART SERVICE
         - id: cart-service
-          uri: lb://cart-service
+          uri: lb://CART-SERVICE
           predicates:
             - Path=/api/v1/cart/**
 
@@ -30,3 +36,7 @@ logging:
   level:
     root: INFO
     com.company: DEBUG
+
+jwt:
+  secret: my-super-secret-key-which-is-very-long-123456789
+  expiration: 3600000

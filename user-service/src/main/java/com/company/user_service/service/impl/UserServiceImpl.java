@@ -1,5 +1,6 @@
 package com.company.user_service.service.impl;
 
+import com.company.user_service.config.JwtUtil;
 import com.company.user_service.dto.request.LoginRequest;
 import com.company.user_service.dto.request.RegisterRequest;
 import com.company.user_service.dto.response.LoginResponse;
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     //REGISTER USER
     @Override
@@ -105,7 +107,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<LoginResponse> login(LoginRequest request) {
 
-        log.info("Login request for email: {}", request.getEmail());
+        log.info("Login request received for email: {}", request.getEmail());
 
         return userRepository.findByEmail(request.getEmail())
                 .switchIfEmpty(Mono.error(new CustomException(
@@ -114,7 +116,10 @@ public class UserServiceImpl implements UserService {
                         401
                 )))
                 .flatMap(user -> {
+
+                    // 🔐 Password validation
                     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                        log.warn("Invalid password attempt for email: {}", request.getEmail());
                         return Mono.error(new CustomException(
                                 "Invalid credentials",
                                 "INVALID_CREDENTIALS",
@@ -122,11 +127,20 @@ public class UserServiceImpl implements UserService {
                         ));
                     }
 
-                    // JWT will be added later
+                    // 🔥 Generate JWT
+                    String token = jwtUtil.generateToken(
+                            user.getEmail(),
+                            user.getRole().name(),
+                            user.getId()   // 👈 IMPORTANT (add this)
+                    );
+
+                    log.info("User logged in successfully: {}", user.getEmail());
+
                     return Mono.just(LoginResponse.builder()
-                            .token("DUMMY_TOKEN")
+                            .token(token)
                             .type("Bearer")
                             .build());
-                });
+                })
+                .doOnError(ex -> log.error("Login failed for email {}: {}", request.getEmail(), ex.getMessage()));
     }
 }

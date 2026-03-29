@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "User API", description = "Operations related to Users")
