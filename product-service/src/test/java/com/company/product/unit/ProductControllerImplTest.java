@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 @WebFluxTest(ProductController.class)
 @Import(GlobalExceptionHandler.class)
-class ProductControllerTest {
+class ProductControllerImplTest {
 
     @Autowired
     private WebTestClient webTestClient;

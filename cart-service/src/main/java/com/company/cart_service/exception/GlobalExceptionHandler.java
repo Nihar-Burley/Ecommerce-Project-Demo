@@ -75,6 +75,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    //Custom Exception
+    @ExceptionHandler(CustomException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleCustomException(CustomException ex) {
+
+        log.error("CustomException: {}", ex.getMessage());
+
+        return buildResponse(
+                ex.getMessage(),
+                ex.getErrorCode(),
+                HttpStatus.valueOf(ex.getStatus())
+        );
+    }
+
     // ================= COMMON BUILDER =================
 
     private Mono<ResponseEntity<ErrorResponse>> buildResponse(String message,

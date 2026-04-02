@@ -39,6 +39,10 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
 jwt:
   secret: my-super-secret-key-which-is-very-long-123456789
   expiration: 3600000
