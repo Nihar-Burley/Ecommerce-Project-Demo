@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
                         .build()));
     }
 
-    // ENERIC ERROR
+    // GENERIC ERROR
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<ErrorResponse>> handleGeneric(Exception ex) {
 

@@ -1,6 +1,7 @@
 package com.company.cart_service.client;
 
 import com.company.cart_service.dto.response.ProductResponse;
+import com.company.cart_service.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class ProductClient {
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError, response -> {
                     log.error("Client error while fetching product: {}", response.statusCode());
-                    return Mono.error(new RuntimeException("Product not found"));
+                    return Mono.error(new CustomException("Product not found", "PRODUCT_NOT_FOUND", 404));
                 })
                 .onStatus(HttpStatus::is5xxServerError, response -> {
                     log.error("Server error from Product Service: {}", response.statusCode());
