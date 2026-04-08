@@ -1,6 +1,7 @@
 package com.company.cart_service.controller;
 
 import com.company.cart_service.dto.request.AddToCartRequest;
+import com.company.cart_service.dto.request.CartBulkRequest;
 import com.company.cart_service.dto.request.UpdateCartRequest;
 import com.company.cart_service.dto.response.CartResponse;
 
@@ -36,6 +37,20 @@ public interface CartController {
 
             @Valid @RequestBody AddToCartRequest request);
 
+    // ================= BULK ADD =================
+
+    @Operation(summary = "Add multiple items", description = "Add multiple products to cart")
+    @ApiResponse(responseCode = "200", description = "Items added successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @ApiResponse(responseCode = "404", description = "Product not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @PostMapping("/bulk/add")
+    Mono<CartResponse> addItems(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody CartBulkRequest request);
+
+
     @Operation(summary = "Update cart item quantity", description = "Update quantity of a product in cart")
     @ApiResponse(responseCode = "200", description = "Cart updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -47,7 +62,36 @@ public interface CartController {
             @RequestHeader("X-User-Role") String role,
             @Valid @RequestBody UpdateCartRequest request);
 
-    @Operation(summary = "Remove item from cart", description = "Remove a specific product from user's cart")
+    // ================= BULK UPDATE =================
+
+    @Operation(summary = "Update multiple items", description = "Update multiple cart items")
+    @PutMapping("/bulk/update")
+    Mono<CartResponse> updateItems(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody CartBulkRequest request);
+
+    // ================= INCREASE =================
+
+    @Operation(summary = "Increase quantity", description = "Increase quantity of cart items")
+    @PutMapping("/increase")
+    Mono<CartResponse> increaseItems(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody CartBulkRequest request);
+
+    // ================= DECREASE =================
+
+    @Operation(summary = "Decrease quantity", description = "Decrease quantity or remove items")
+    @PutMapping("/decrease")
+    Mono<CartResponse> decreaseItems(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody CartBulkRequest request);
+
+    // ================= REMOVE =================
+
+    @Operation(summary = "Remove item", description = "Remove product from cart")
     @ApiResponse(responseCode = "204", description = "Item removed successfully")
     @ApiResponse(responseCode = "404", description = "Cart or product not found")
     @ApiResponse(responseCode = "403", description = "Access denied")
@@ -58,7 +102,9 @@ public interface CartController {
             @RequestHeader("X-User-Role") String role,
             @RequestParam Long productId);
 
-    @Operation(summary = "Get cart by userId", description = "Fetch cart details for a specific user")
+    // ================= GET =================
+
+    @Operation(summary = "Get cart", description = "Fetch cart details")
     @ApiResponse(responseCode = "200", description = "Cart retrieved successfully",
             content = @Content(schema = @Schema(implementation = CartResponse.class)))
     @ApiResponse(responseCode = "404", description = "Cart not found")
