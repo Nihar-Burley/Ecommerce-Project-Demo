@@ -1,8 +1,7 @@
-package com.company.user_service.unit;
+package com.company.product.unit;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
@@ -10,12 +9,10 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class TestSecurityConfig {
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf().disable()
-                .authorizeExchange()
-                .anyExchange().permitAll()
-                .and()
+                .authorizeExchange(ex -> ex.anyExchange().permitAll())
                 .build();
     }
 }

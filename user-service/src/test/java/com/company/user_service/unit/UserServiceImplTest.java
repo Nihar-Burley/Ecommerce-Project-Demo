@@ -1,207 +1,232 @@
 package com.company.user_service.unit;
 
+
+import com.company.common.constants.Role;
+import com.company.common.constants.UserStatus;
+import com.company.common.dto.user.request.LoginRequest;
+import com.company.common.dto.user.request.RegisterRequest;
 import com.company.user_service.config.JwtUtil;
-import com.company.user_service.dto.request.LoginRequest;
-import com.company.user_service.dto.request.RegisterRequest;
 import com.company.user_service.entity.User;
 import com.company.user_service.exception.CustomException;
 import com.company.user_service.repository.UserRepository;
 import com.company.user_service.service.impl.UserServiceImpl;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.LocalDateTime;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private JwtUtil jwtUtil;
+    @Mock private UserRepository userRepository;
+    @Mock private PasswordEncoder passwordEncoder;
+    @Mock private JwtUtil jwtUtil;
 
     @InjectMocks
-    private UserServiceImpl service;
+    private UserServiceImpl userService;
 
-    private RegisterRequest registerRequest;
-    private LoginRequest loginRequest;
     private User user;
 
     @BeforeEach
     void setup() {
-
-        registerRequest = new RegisterRequest();
-        registerRequest.setUsername("Nihar");
-        registerRequest.setEmail("test@gmail.com");
-        registerRequest.setPassword("1234");
-
-        loginRequest = new LoginRequest();
-        loginRequest.setEmail("test@gmail.com");
-        loginRequest.setPassword("1234");
-
         user = User.builder()
                 .id(1L)
-                .username("Nihar")
-                .email("test@gmail.com")
+                .username("nihar")
+                .email("nihar@test.com")
                 .password("encoded")
                 .role(Role.USER)
+                .status(UserStatus.APPROVED)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
 
+    // ================= REGISTER =================
 
     @Test
-    void shouldRegisterUser() {
+    void register_success() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("nihar");
+        req.setEmail("nihar@test.com");
+        req.setPassword("password");
 
-        when(userRepository.existsByEmail("test@gmail.com"))
-                .thenReturn(Mono.just(false));
+        when(userRepository.existsByEmail(req.getEmail())).thenReturn(Mono.just(false));
+        when(passwordEncoder.encode(any())).thenReturn("encoded");
+        when(userRepository.save(any())).thenReturn(Mono.just(user));
 
-        when(passwordEncoder.encode("1234"))
-                .thenReturn("encoded");
-
-        when(userRepository.save(any()))
-                .thenReturn(Mono.just(user));
-
-        StepVerifier.create(service.register(registerRequest))
-                .expectNextMatches(res -> res.getEmail().equals("test@gmail.com"))
+        StepVerifier.create(userService.register(req))
+                .assertNext(res -> {
+                    assertEquals("nihar@test.com", res.getEmail());
+                    assertEquals("nihar", res.getUsername());
+                })
                 .verifyComplete();
     }
 
+    @Test
+    void register_emailAlreadyExists() {
+        when(userRepository.existsByEmail(any())).thenReturn(Mono.just(true));
+
+        StepVerifier.create(userService.register(new RegisterRequest()))
+                .expectErrorMatches(ex ->
+                        ex instanceof CustomException &&
+                                ((CustomException) ex).getErrorCode().equals("USER_ALREADY_EXISTS"))
+                .verify();
+    }
+
+    // ================= LOGIN =================
 
     @Test
-    void shouldThrowWhenEmailAlreadyExists() {
+    void login_success() {
+        LoginRequest req = new LoginRequest();
+        req.setEmail("nihar@test.com");
+        req.setPassword("password");
 
-        when(userRepository.existsByEmail("test@gmail.com"))
-                .thenReturn(Mono.just(true));
+        when(userRepository.findByEmail(req.getEmail())).thenReturn(Mono.just(user));
+        when(passwordEncoder.matches(any(), any())).thenReturn(true);
+        when(jwtUtil.generateToken(any(), any(), any())).thenReturn("token");
 
-        StepVerifier.create(service.register(registerRequest))
+        Date expiry = new Date(System.currentTimeMillis() + 10000);
+        when(jwtUtil.extractExpiration(any())).thenReturn(expiry);
+
+        StepVerifier.create(userService.login(req))
+                .assertNext(res -> {
+                    assertEquals("token", res.getToken());
+                    assertEquals("Bearer", res.getType());
+                    assertTrue(res.getExpiresIn() > 0);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void login_userNotFound() {
+        when(userRepository.findByEmail(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(userService.login(new LoginRequest()))
+                .expectErrorMatches(ex ->
+                        ex instanceof CustomException &&
+                                ((CustomException) ex).getErrorCode().equals("INVALID_CREDENTIALS"))
+                .verify();
+    }
+
+    @Test
+    void login_wrongPassword() {
+        when(userRepository.findByEmail(any())).thenReturn(Mono.just(user));
+        when(passwordEncoder.matches(any(), any())).thenReturn(false);
+
+        StepVerifier.create(userService.login(new LoginRequest()))
                 .expectError(CustomException.class)
                 .verify();
     }
 
+    @Test
+    void login_notApproved() {
+        user.setStatus(UserStatus.PENDING);
+        when(userRepository.findByEmail(any())).thenReturn(Mono.just(user));
+
+        StepVerifier.create(userService.login(new LoginRequest()))
+                .expectErrorMatches(ex ->
+                        ((CustomException) ex).getErrorCode().equals("USER_NOT_APPROVED"))
+                .verify();
+    }
+
+    // ================= GET USER =================
 
     @Test
-    void shouldGetUserById() {
+    void getUser_success() {
+        when(userRepository.findById(1L)).thenReturn(Mono.just(user));
 
-        when(userRepository.findById(1L))
-                .thenReturn(Mono.just(user));
-
-        StepVerifier.create(service.getUserById(1L))
+        StepVerifier.create(userService.getUserById(1L))
                 .expectNextMatches(res -> res.getId().equals(1L))
                 .verifyComplete();
     }
 
-
     @Test
-    void shouldThrowWhenUserNotFound() {
-
-        when(userRepository.findById(1L))
+    void getUser_notFound() {
+        when(userRepository.findById(anyLong()))
                 .thenReturn(Mono.empty());
 
-        StepVerifier.create(service.getUserById(1L))
-                .expectError(CustomException.class)
+        StepVerifier.create(userService.getUserById(1L))
+                .expectErrorMatches(ex ->
+                        ((CustomException) ex).getErrorCode().equals("USER_NOT_FOUND"))
                 .verify();
     }
 
+    // ================= GET ALL =================
 
     @Test
-    void shouldReturnAllUsers() {
+    void getAllUsers_success() {
+        when(userRepository.findAll()).thenReturn(Flux.just(user));
 
-        when(userRepository.findAll())
-                .thenReturn(Flux.just(user));
-
-        StepVerifier.create(service.getAllUsers())
+        StepVerifier.create(userService.getAllUsers())
                 .expectNextCount(1)
                 .verifyComplete();
     }
 
-
     @Test
-    void shouldDeleteUser() {
+    void getAllUsers_empty() {
+        when(userRepository.findAll()).thenReturn(Flux.empty());
 
-        when(userRepository.findById(1L))
-                .thenReturn(Mono.just(user));
-
-        when(userRepository.delete(user))
-                .thenReturn(Mono.empty());
-
-        StepVerifier.create(service.deleteUser(1L))
+        StepVerifier.create(userService.getAllUsers())
+                .expectNextCount(0)
                 .verifyComplete();
     }
 
+    // ================= DELETE =================
 
     @Test
-    void shouldThrowWhenDeletingNonExistingUser() {
+    void delete_success() {
+        when(userRepository.findById(1L)).thenReturn(Mono.just(user));
+        when(userRepository.delete(any())).thenReturn(Mono.empty());
 
-        when(userRepository.findById(1L))
-                .thenReturn(Mono.empty());
+        StepVerifier.create(userService.deleteUser(1L))
+                .verifyComplete();
+    }
 
-        StepVerifier.create(service.deleteUser(1L))
+    @Test
+    void delete_notFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Mono.empty());
+
+        StepVerifier.create(userService.deleteUser(1L))
                 .expectError(CustomException.class)
                 .verify();
     }
 
+    // ================= APPROVE =================
 
     @Test
-    void shouldLoginSuccessfully() {
+    void approve_success() {
+        user.setStatus(UserStatus.PENDING);
 
-        when(userRepository.findByEmail("test@gmail.com"))
-                .thenReturn(Mono.just(user));
+        when(userRepository.findById(1L)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(user));
 
-        when(passwordEncoder.matches("1234", "encoded"))
-                .thenReturn(true);
-
-        when(jwtUtil.generateToken(any(), any(), any()))
-                .thenReturn("token123");
-
-        StepVerifier.create(service.login(loginRequest))
-                .expectNextMatches(res -> res.getToken().equals("token123"))
+        StepVerifier.create(userService.approveUser(1L))
+                .expectNextMatches(res -> res.getId().equals(1L))
                 .verifyComplete();
     }
 
-
     @Test
-    void shouldThrowWhenUserNotFoundDuringLogin() {
+    void approve_alreadyApproved() {
+        user.setStatus(UserStatus.APPROVED);
 
-        when(userRepository.findByEmail("test@gmail.com"))
-                .thenReturn(Mono.empty());
+        when(userRepository.findById(1L)).thenReturn(Mono.just(user));
 
-        StepVerifier.create(service.login(loginRequest))
-                .expectError(CustomException.class)
-                .verify();
-    }
-
-
-    @Test
-    void shouldThrowWhenInvalidPassword() {
-
-        when(userRepository.findByEmail("test@gmail.com"))
-                .thenReturn(Mono.just(user));
-
-        when(passwordEncoder.matches("1234", "encoded"))
-                .thenReturn(false);
-
-        StepVerifier.create(service.login(loginRequest))
-                .expectError(CustomException.class)
+        StepVerifier.create(userService.approveUser(1L))
+                .expectErrorMatches(ex ->
+                        ((CustomException) ex).getErrorCode().equals("USER_ALREADY_APPROVED"))
                 .verify();
     }
 }

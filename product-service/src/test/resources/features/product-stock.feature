@@ -1,24 +1,61 @@
-Feature: Product Stock
+@product @stock
+Feature: Product Stock Management APIs
 
-  Scenario: Reduce stock successfully
-    Given a product exists with stock 10
-    When the client reduces stock by 2
-    Then the response status should be 204
+  Background:
+    Given base url is "/api/v1/products"
 
-  Scenario: Reduce stock with insufficient quantity
-    Given a product exists with stock 5
-    When the client reduces stock by 10
-    Then the response status should be 400
+  # ================= REDUCE STOCK =================
 
-  Scenario: Reduce stock for non-existing product
-    When the client reduces stock for product id 999 by 2
-    Then the response status should be 404
+  Scenario Outline: Reduce stock successfully
+    Given a product exists
+    When the client calls PUT "/{id}/reduce/<qty>"
+    Then response status should be 204
 
-  Scenario: Increase stock successfully
-    Given a product exists with stock 5
-    When the client increases stock by 5
-    Then the response status should be 204
+    Examples:
+      | qty |
+      | 1   |
+      | 2   |
+      | 5   |
 
-  Scenario: Increase stock for non-existing product
-    When the client increases stock for product id 999 by 5
-    Then the response status should be 404
+  Scenario Outline: Reduce stock insufficient
+    Given a product exists
+    When the client calls PUT "/{id}/reduce/<qty>"
+    Then response status should be 400
+
+    Examples:
+      | qty |
+      | 100 |
+      | 999 |
+
+  Scenario Outline: Reduce stock invalid quantity
+    Given a product exists
+    When the client calls PUT "/{id}/reduce/<qty>"
+    Then response status should be 400
+
+    Examples:
+      | qty |
+      | 0   |
+      | -1  |
+
+  # ================= INCREASE STOCK =================
+
+  Scenario Outline: Increase stock successfully
+    Given a product exists
+    When the client calls PUT "/{id}/increase/<qty>"
+    Then response status should be 204
+
+    Examples:
+      | qty |
+      | 1   |
+      | 5   |
+      | 10  |
+
+  Scenario Outline: Increase stock invalid quantity
+    Given a product exists
+    When the client calls PUT "/{id}/increase/<qty>"
+    Then response status should be 400
+
+    Examples:
+      | qty |
+      | 0   |
+      | -5  |

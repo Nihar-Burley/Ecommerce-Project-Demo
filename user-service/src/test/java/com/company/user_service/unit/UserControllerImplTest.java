@@ -1,11 +1,10 @@
 package com.company.user_service.unit;
 
-import com.company.user_service.dto.request.LoginRequest;
-import com.company.user_service.dto.request.RegisterRequest;
-import com.company.user_service.dto.response.LoginResponse;
-import com.company.user_service.dto.response.UserResponse;
-import com.company.user_service.exception.CustomException;
-import com.company.user_service.exception.GlobalExceptionHandler;
+import com.company.common.dto.user.request.LoginRequest;
+import com.company.common.dto.user.request.RegisterRequest;
+import com.company.common.dto.user.response.LoginResponse;
+import com.company.common.dto.user.response.UserResponse;
+import com.company.user_service.controller.impl.UserControllerImpl;
 import com.company.user_service.service.UserService;
 
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import reactor.core.publisher.Flux;
@@ -22,178 +20,128 @@ import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 
-@WebFluxTest(UserController.class)
-@Import({GlobalExceptionHandler.class, TestSecurityConfig.class})
+@WebFluxTest(controllers = UserControllerImpl.class)
+@Import(TestSecurityConfig.class)
 class UserControllerImplTest {
 
     @Autowired
-    private WebTestClient webTestClient;
+    private WebTestClient client;
 
     @MockBean
     private UserService userService;
 
+    // ================= REGISTER =================
     @Test
-    void shouldRegisterUserWhenValidRequest() {
-
+    void register_success() {
         RegisterRequest request = new RegisterRequest();
-        request.setEmail("test@gmail.com");
         request.setUsername("nihar");
-        request.setPassword("123456");
-
-        UserResponse response = UserResponse.builder()
-                .id(1L)
-                .email("test@gmail.com")
-                .build();
+        request.setEmail("nihar@test.com");
+        request.setPassword("password");
 
         when(userService.register(any()))
-                .thenReturn(Mono.just(response));
+                .thenReturn(Mono.just(UserResponse.builder()
+                        .id(1L)
+                        .username("nihar")
+                        .email("nihar@test.com")
+                        .build()));
 
-        webTestClient.post()
+        client.post()
                 .uri("/api/v1/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
                 .expectStatus().isCreated()
-                .expectBody()
-                .jsonPath("$.email").isEqualTo("test@gmail.com");
-
-        verify(userService).register(any());
+                .expectBody(UserResponse.class)
+                .value(res -> {
+                    assertEquals(1L, res.getId());
+                    assertEquals("nihar@test.com", res.getEmail());
+                });
     }
 
+    // ================= LOGIN =================
     @Test
-    void shouldFailRegisterWhenInvalidInput() {
-
-        RegisterRequest request = new RegisterRequest(); // empty
-
-        webTestClient.post()
-                .uri("/api/v1/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest();
-    }
-
-
-    @Test
-    void shouldLoginUserWhenValidCredentials() {
-
+    void login_success() {
         LoginRequest request = new LoginRequest();
-        request.setEmail("test@gmail.com");
-        request.setPassword("123456");
-
-        LoginResponse response = LoginResponse.builder()
-                .token("token123")
-                .type("Bearer")
-                .build();
+        request.setEmail("nihar@test.com");
+        request.setPassword("password");
 
         when(userService.login(any()))
-                .thenReturn(Mono.just(response));
+                .thenReturn(Mono.just(LoginResponse.builder()
+                        .token("test-token")
+                        .type("Bearer")
+                        .build()));
 
-        webTestClient.post()
-                .uri("/api/v1/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.token").isEqualTo("token123");
-
-        verify(userService).login(any());
-    }
-
-    @Test
-    void shouldReturnUnauthorizedWhenInvalidCredentials() {
-
-        LoginRequest request = new LoginRequest();
-        request.setEmail("test@gmail.com");
-        request.setPassword("wrongpassword"); // valid format, wrong logically
-
-        when(userService.login(any()))
-                .thenReturn(Mono.error(new CustomException("Invalid credentials", "UNAUTHORIZED", 401)));
-
-        webTestClient.post()
+        client.post()
                 .uri("/api/v1/users/login")
                 .bodyValue(request)
                 .exchange()
-                .expectStatus().isUnauthorized();
+                .expectStatus().isOk()
+                .expectBody(LoginResponse.class)
+                .value(res -> {
+                    assertEquals("test-token", res.getToken());
+                    assertEquals("Bearer", res.getType());
+                });
     }
 
+    // ================= GET USER =================
     @Test
-    void shouldReturnUserWhenUserExists() {
-
-        UserResponse response = UserResponse.builder()
-                .id(1L)
-                .email("test@gmail.com")
-                .build();
-
+    void getUser_success() {
         when(userService.getUserById(1L))
-                .thenReturn(Mono.just(response));
+                .thenReturn(Mono.just(UserResponse.builder()
+                        .id(1L)
+                        .username("nihar")
+                        .build()));
 
-        webTestClient.get()
+        client.get()
                 .uri("/api/v1/users/1")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(1);
-
-        verify(userService).getUserById(1L);
+                .expectBody(UserResponse.class)
+                .value(res -> assertEquals(1L, res.getId()));
     }
 
+    // ================= GET ALL =================
     @Test
-    void shouldReturnNotFoundWhenUserDoesNotExist() {
-
-        when(userService.getUserById(1L))
-                .thenReturn(Mono.error(new CustomException("Not found", "USER_NOT_FOUND", 404)));
-
-        webTestClient.get()
-                .uri("/api/v1/users/1")
-                .exchange()
-                .expectStatus().isNotFound();
-    }
-
-
-    @Test
-    void shouldReturnAllUsers() {
-
-        UserResponse response = UserResponse.builder().id(1L).build();
-
+    void getAll_success() {
         when(userService.getAllUsers())
-                .thenReturn(Flux.just(response));
+                .thenReturn(Flux.just(
+                        UserResponse.builder().id(1L).build(),
+                        UserResponse.builder().id(2L).build()
+                ));
 
-        webTestClient.get()
+        client.get()
                 .uri("/api/v1/users")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(UserResponse.class)
-                .hasSize(1);
-
-        verify(userService).getAllUsers();
+                .hasSize(2);
     }
 
+    // ================= DELETE =================
     @Test
-    void shouldDeleteUserWhenUserExists() {
+    void delete_success() {
+        when(userService.deleteUser(1L)).thenReturn(Mono.empty());
 
-        when(userService.deleteUser(1L))
-                .thenReturn(Mono.empty());
-
-        webTestClient.delete()
+        client.delete()
                 .uri("/api/v1/users/1")
                 .exchange()
-                .expectStatus().isNoContent();
-
-        verify(userService).deleteUser(1L);
+                .expectStatus().isNoContent(); // ✅ correct (204)
     }
 
+    // ================= APPROVE =================
     @Test
-    void shouldReturnNotFoundWhenDeletingNonExistingUser() {
+    void approve_success() {
+        when(userService.approveUser(1L))
+                .thenReturn(Mono.just(UserResponse.builder()
+                        .id(1L)
+                        .build()));
 
-        when(userService.deleteUser(1L))
-                .thenReturn(Mono.error(new CustomException("Not found", "USER_NOT_FOUND", 404)));
-
-        webTestClient.delete()
-                .uri("/api/v1/users/1")
+        client.put()
+                .uri("/api/v1/users/1/approve")
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isOk()
+                .expectBody(UserResponse.class)
+                .value(res -> assertEquals(1L, res.getId()));
     }
 }

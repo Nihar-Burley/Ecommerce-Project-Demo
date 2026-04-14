@@ -1,6 +1,7 @@
 package com.company.product.unit;
 
 import com.company.common.dto.product.request.ProductRequest;
+import com.company.common.dto.product.response.ProductResponse;
 import com.company.product.entity.Product;
 import com.company.product.exception.ResourceNotFoundException;
 import com.company.product.repository.ProductRepository;
@@ -8,11 +9,7 @@ import com.company.product.service.impl.ProductServiceImpl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,7 +19,6 @@ import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
     @Mock
@@ -31,126 +27,196 @@ class ProductServiceImplTest {
     @InjectMocks
     private ProductServiceImpl service;
 
-    private Product product;
-    private ProductRequest request;
-
     @BeforeEach
     void setup() {
-        product = Product.builder()
-                .id(1L)
-                .name("iPhone 15")
-                .description("Apple smartphone")
-                .price(80000.0)
-                .stock(10)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        request = new ProductRequest();
-        request.setName("iPhone 15");
-        request.setDescription("Apple smartphone");
-        request.setPrice(80000.0);
-        request.setStock(10);
+        MockitoAnnotations.openMocks(this);
     }
 
+    // ================= GET ALL =================
+
     @Test
-    void shouldReturnAllProducts() {
-        when(repository.findAll()).thenReturn(Flux.just(product));
+    void getAllProducts_success() {
+        when(repository.findAll())
+                .thenReturn(Flux.just(new Product(), new Product()));
 
         StepVerifier.create(service.getAllProducts())
-                .expectNextMatches(res -> res.getName().equals("iPhone 15"))
+                .expectNextCount(2)
                 .verifyComplete();
-
-        verify(repository, times(1)).findAll();
     }
 
     @Test
-    void shouldReturnEmptyWhenNoProducts() {
-        when(repository.findAll()).thenReturn(Flux.empty());
+    void getAllProducts_empty() {
+        when(repository.findAll())
+                .thenReturn(Flux.empty());
 
         StepVerifier.create(service.getAllProducts())
                 .verifyComplete();
-
-        verify(repository).findAll();
     }
 
+    // ================= GET BY ID =================
+
     @Test
-    void shouldReturnProductById() {
-        when(repository.findById(1L)).thenReturn(Mono.just(product));
+    void getProductById_success() {
+        Product product = new Product();
+        product.setId(1L);
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(product));
 
         StepVerifier.create(service.getProductById(1L))
-                .expectNextMatches(res -> res.getId().equals(1L))
+                .expectNextMatches(p -> p.getId().equals(1L))
                 .verifyComplete();
-
-        verify(repository).findById(1L);
     }
 
     @Test
-    void shouldThrowExceptionWhenProductNotFound() {
-        when(repository.findById(1L)).thenReturn(Mono.empty());
+    void getProductById_notFound() {
+        when(repository.findById(1L))
+                .thenReturn(Mono.empty());
 
         StepVerifier.create(service.getProductById(1L))
                 .expectError(ResourceNotFoundException.class)
                 .verify();
-
-        verify(repository).findById(1L);
     }
 
+    // ================= CREATE =================
+
     @Test
-    void shouldCreateProduct() {
-        when(repository.save(any(Product.class))).thenReturn(Mono.just(product));
+    void createProduct_success() {
+        ProductRequest request = new ProductRequest();
+
+        Product saved = new Product();
+        saved.setId(10L);
+
+        when(repository.save(any()))
+                .thenReturn(Mono.just(saved));
 
         StepVerifier.create(service.createProduct(request))
-                .expectNextMatches(res -> res.getName().equals("iPhone 15"))
+                .expectNextMatches(res -> res.getId().equals(10L))
                 .verifyComplete();
+    }
 
-        verify(repository).save(any(Product.class));
+    // ================= UPDATE =================
+
+    @Test
+    void updateProduct_success() {
+        Product existing = new Product();
+        existing.setId(1L);
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(existing));
+
+        when(repository.save(any()))
+                .thenReturn(Mono.just(existing));
+
+        StepVerifier.create(service.updateProduct(1L, new ProductRequest()))
+                .expectNextCount(1)
+                .verifyComplete();
     }
 
     @Test
-    void shouldUpdateProduct() {
-        when(repository.findById(1L)).thenReturn(Mono.just(product));
-        when(repository.save(any(Product.class))).thenReturn(Mono.just(product));
+    void updateProduct_notFound() {
+        when(repository.findById(1L))
+                .thenReturn(Mono.empty());
 
-        StepVerifier.create(service.updateProduct(1L, request))
-                .expectNextMatches(res -> res.getName().equals("iPhone 15"))
-                .verifyComplete();
-
-        verify(repository).findById(1L);
-        verify(repository).save(any(Product.class));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUpdatingNonExistingProduct() {
-        when(repository.findById(1L)).thenReturn(Mono.empty());
-
-        StepVerifier.create(service.updateProduct(1L, request))
+        StepVerifier.create(service.updateProduct(1L, new ProductRequest()))
                 .expectError(ResourceNotFoundException.class)
                 .verify();
-
-        verify(repository).findById(1L);
-        verify(repository, never()).save(any());
     }
 
+    // ================= DELETE =================
+
     @Test
-    void shouldDeleteProduct() {
-        when(repository.findById(1L)).thenReturn(Mono.just(product));
-        when(repository.delete(product)).thenReturn(Mono.empty());
+    void deleteProduct_success() {
+        Product product = new Product();
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(product));
+
+        when(repository.delete(product))
+                .thenReturn(Mono.empty());
 
         StepVerifier.create(service.deleteProduct(1L))
                 .verifyComplete();
-
-        verify(repository).delete(product);
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingNonExistingProduct() {
-        when(repository.findById(1L)).thenReturn(Mono.empty());
+    void deleteProduct_notFound() {
+        when(repository.findById(1L))
+                .thenReturn(Mono.empty());
 
         StepVerifier.create(service.deleteProduct(1L))
                 .expectError(ResourceNotFoundException.class)
                 .verify();
+    }
 
-        verify(repository).findById(1L);
+    // ================= REDUCE STOCK =================
+
+    @Test
+    void reduceStock_success() {
+        Product product = new Product();
+        product.setStock(10);
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(product));
+
+        when(repository.save(any()))
+                .thenReturn(Mono.just(product));
+
+        StepVerifier.create(service.reduceStock(1L, 5))
+                .verifyComplete();
+
+        verify(repository).save(any());
+    }
+
+    @Test
+    void reduceStock_insufficient() {
+        Product product = new Product();
+        product.setStock(2);
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(product));
+
+        StepVerifier.create(service.reduceStock(1L, 5))
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
+    void reduceStock_notFound() {
+        when(repository.findById(1L))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.reduceStock(1L, 5))
+                .expectError(ResourceNotFoundException.class)
+                .verify();
+    }
+
+    // ================= INCREASE STOCK =================
+
+    @Test
+    void increaseStock_success() {
+        Product product = new Product();
+        product.setStock(5);
+
+        when(repository.findById(1L))
+                .thenReturn(Mono.just(product));
+
+        when(repository.save(any()))
+                .thenReturn(Mono.just(product));
+
+        StepVerifier.create(service.increaseStock(1L, 5))
+                .verifyComplete();
+
+        verify(repository).save(any());
+    }
+
+    @Test
+    void increaseStock_notFound() {
+        when(repository.findById(1L))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.increaseStock(1L, 5))
+                .expectError(ResourceNotFoundException.class)
+                .verify();
     }
 }

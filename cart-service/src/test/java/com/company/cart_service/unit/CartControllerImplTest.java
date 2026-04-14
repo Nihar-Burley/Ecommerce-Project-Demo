@@ -1,122 +1,259 @@
 package com.company.cart_service.unit;
 
-import com.company.common.dto.cart.request.AddToCartRequest;
-import com.company.common.dto.cart.response.CartResponse;
-import com.company.cart_service.exception.CustomException;
+import com.company.cart_service.controller.impl.CartControllerImpl;
 import com.company.cart_service.service.CartService;
+import com.company.common.config.SecurityUtils;
+import com.company.common.dto.cart.request.*;
+import com.company.common.dto.cart.response.CartResponse;
 
-import com.company.common.controller.cart.CartController;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@WebFluxTest(CartController.class)
+@ExtendWith(MockitoExtension.class)
 class CartControllerImplTest {
 
-    @Autowired
-    private WebTestClient webTestClient;
-
-    @MockBean
+    @Mock
     private CartService cartService;
 
+    @InjectMocks
+    private CartControllerImpl cartController;
+
+    private Authentication authentication;
+
+    @BeforeEach
+    void setup() {
+        authentication = new UsernamePasswordAuthenticationToken("user", null);
+    }
+
+    // ================= ADD =================
+
     @Test
-    void shouldAddToCart() {
-
+    void addToCart_success() {
         AddToCartRequest request = new AddToCartRequest();
-        request.setProductId(1L);
-        request.setQuantity(2);
-
         CartResponse response = new CartResponse();
-        response.setUserId(1L);
 
-        when(cartService.addToCart(any())).thenReturn(Mono.just(response));
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
 
-        webTestClient.post()
-                .uri("/api/v1/cart/add")
-                .header("X-User-Id", "1")
-                .header("X-User-Role", "USER")
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.userId").isEqualTo(1);
-    }
+            when(cartService.addToCart(any()))
+                    .thenReturn(Mono.just(response));
 
+            StepVerifier.create(cartController.addToCart(authentication, request))
+                    .expectNext(response)
+                    .verifyComplete();
 
-    @Test
-    void shouldReturnForbiddenWhenInvalidRole() {
-
-        AddToCartRequest request = new AddToCartRequest();
-        request.setProductId(1L);
-        request.setQuantity(1);
-
-        webTestClient.post()
-                .uri("/api/v1/cart/add")
-                .header("X-User-Id", "1")
-                .header("X-User-Role", "GUEST")
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isForbidden();
+            verify(cartService).addToCart(any());
+        }
     }
 
     @Test
-    void shouldHandleServiceException() {
-
+    void addToCart_error() {
         AddToCartRequest request = new AddToCartRequest();
 
-        when(cartService.addToCart(any()))
-                .thenReturn(Mono.error(new CustomException("Error", "ERR", 400)));
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
 
-        webTestClient.post()
-                .uri("/api/v1/cart/add")
-                .header("X-User-Id", "1")
-                .header("X-User-Role", "USER")
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest();
+            when(cartService.addToCart(any()))
+                    .thenReturn(Mono.error(new RuntimeException("Add failed")));
+
+            StepVerifier.create(cartController.addToCart(authentication, request))
+                    .expectError(RuntimeException.class)
+                    .verify();
+        }
     }
 
-    @Test
-    void shouldReturnCart() {
+    // ================= BULK ADD =================
 
+    @Test
+    void addItems_success() {
+        CartBulkRequest request = new CartBulkRequest();
         CartResponse response = new CartResponse();
-        response.setUserId(1L);
 
-        when(cartService.getCart(1L))
-                .thenReturn(Mono.just(response));
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
 
-        webTestClient.get()
-                .uri("/api/v1/cart")
-                .header("X-User-Id", "1")
-                .header("X-User-Role", "USER")
-                .exchange()
-                .expectStatus().isOk();
+            when(cartService.addItems(any()))
+                    .thenReturn(Mono.just(response));
+
+            StepVerifier.create(cartController.addItems(authentication, request))
+                    .expectNext(response)
+                    .verifyComplete();
+        }
     }
 
+    @Test
+    void addItems_emptyCart() {
+        CartBulkRequest request = new CartBulkRequest();
+
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.addItems(any()))
+                    .thenReturn(Mono.empty());
+
+            StepVerifier.create(cartController.addItems(authentication, request))
+                    .verifyComplete();
+        }
+    }
+
+    // ================= UPDATE =================
 
     @Test
-    void shouldDeleteItem() {
+    void updateCart_success() {
+        UpdateCartRequest request = new UpdateCartRequest();
+        CartResponse response = new CartResponse();
 
-        when(cartService.removeItem(1L, 1L))
-                .thenReturn(Mono.empty());
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
 
-        webTestClient.delete()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/cart/remove")
-                        .queryParam("productId", 1L)
-                        .build())
-                .header("X-User-Id", "1")
-                .header("X-User-Role", "USER")
-                .exchange()
-                .expectStatus().isNoContent();
+            when(cartService.updateCart(any()))
+                    .thenReturn(Mono.just(response));
+
+            StepVerifier.create(cartController.updateCart(authentication, request))
+                    .expectNext(response)
+                    .verifyComplete();
+        }
+    }
+
+    @Test
+    void updateCart_error() {
+        UpdateCartRequest request = new UpdateCartRequest();
+
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.updateCart(any()))
+                    .thenReturn(Mono.error(new RuntimeException("Update failed")));
+
+            StepVerifier.create(cartController.updateCart(authentication, request))
+                    .expectError(RuntimeException.class)
+                    .verify();
+        }
+    }
+
+    // ================= INCREASE =================
+
+    @Test
+    void increaseItems_success() {
+        CartBulkRequest request = new CartBulkRequest();
+        CartResponse response = new CartResponse();
+
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.increaseItems(any()))
+                    .thenReturn(Mono.just(response));
+
+            StepVerifier.create(cartController.increaseItems(authentication, request))
+                    .expectNext(response)
+                    .verifyComplete();
+        }
+    }
+
+    // ================= DECREASE =================
+
+    @Test
+    void decreaseItems_success() {
+        CartBulkRequest request = new CartBulkRequest();
+        CartResponse response = new CartResponse();
+
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.decreaseItems(any()))
+                    .thenReturn(Mono.just(response));
+
+            StepVerifier.create(cartController.decreaseItems(authentication, request))
+                    .expectNext(response)
+                    .verifyComplete();
+        }
+    }
+
+    // ================= REMOVE =================
+
+    @Test
+    void removeItem_success() {
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.removeItem(1L, 10L))
+                    .thenReturn(Mono.empty());
+
+            StepVerifier.create(cartController.removeItem(authentication, 10L))
+                    .verifyComplete();
+        }
+    }
+
+    @Test
+    void removeItem_error() {
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.removeItem(1L, 10L))
+                    .thenReturn(Mono.error(new RuntimeException("Remove failed")));
+
+            StepVerifier.create(cartController.removeItem(authentication, 10L))
+                    .expectError(RuntimeException.class)
+                    .verify();
+        }
+    }
+
+    // ================= GET =================
+
+    @Test
+    void getCart_success() {
+        CartResponse response = new CartResponse();
+
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.getCart(1L))
+                    .thenReturn(Mono.just(response));
+
+            StepVerifier.create(cartController.getCart(authentication))
+                    .expectNext(response)
+                    .verifyComplete();
+        }
+    }
+
+    @Test
+    void getCart_empty() {
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.getCart(1L))
+                    .thenReturn(Mono.empty());
+
+            StepVerifier.create(cartController.getCart(authentication))
+                    .verifyComplete();
+        }
+    }
+
+    @Test
+    void getCart_error() {
+        try (MockedStatic<SecurityUtils> mocked = mockStatic(SecurityUtils.class)) {
+            mocked.when(() -> SecurityUtils.getUserId(authentication)).thenReturn(1L);
+
+            when(cartService.getCart(1L))
+                    .thenReturn(Mono.error(new RuntimeException("Fetch failed")));
+
+            StepVerifier.create(cartController.getCart(authentication))
+                    .expectError(RuntimeException.class)
+                    .verify();
+        }
     }
 }

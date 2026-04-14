@@ -1,5 +1,5 @@
-eureka:
-  client:
-    enabled: false
-  instance:
-    enabled: false
+spring:
+  security:
+    user:
+      name: test
+      password: test
