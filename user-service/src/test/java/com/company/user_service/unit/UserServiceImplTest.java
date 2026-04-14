@@ -3,7 +3,6 @@ package com.company.user_service.unit;
 import com.company.user_service.config.JwtUtil;
 import com.company.user_service.dto.request.LoginRequest;
 import com.company.user_service.dto.request.RegisterRequest;
-import com.company.user_service.entity.Role;
 import com.company.user_service.entity.User;
 import com.company.user_service.exception.CustomException;
 import com.company.user_service.repository.UserRepository;

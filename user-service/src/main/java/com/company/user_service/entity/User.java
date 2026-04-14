@@ -1,5 +1,7 @@
 package com.company.user_service.entity;
 
+import com.company.common.constants.Role;
+import com.company.common.constants.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +29,9 @@ public class User {
     private String password;
 
     private Role role;
+
+    @Column("status")
+    private UserStatus status;
 
     @Column("created_at")
     private LocalDateTime createdAt;

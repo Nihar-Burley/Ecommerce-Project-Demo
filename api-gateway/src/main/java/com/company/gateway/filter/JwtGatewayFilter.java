@@ -27,11 +27,8 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        log.info("Incoming request: {}", path);
-
-        // Skip public APIs
+        // 🔓 Public endpoints (NO JWT required)
         if (path.contains("/login") || path.contains("/register")) {
-            log.info("Public API - skipping JWT validation");
             return chain.filter(exchange);
         }
 
@@ -40,12 +37,7 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("Missing Authorization header");
-            return Mono.error(new CustomException(
-                    "Missing Authorization Header",
-                    "AUTH_HEADER_MISSING",
-                    401
-            ));
+            return Mono.error(new CustomException("Missing Authorization Header", "AUTH_HEADER_MISSING", 401));
         }
 
         String token = authHeader.substring(7);
@@ -56,12 +48,11 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
         String role = claims.get("role", String.class);
         Long userId = claims.get("userId", Long.class);
 
-        log.info("JWT validated: user={}, role={}", email, role);
-
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                 .header("X-User-Email", email)
                 .header("X-User-Role", role)
                 .header("X-User-Id", String.valueOf(userId))
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .build();
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());

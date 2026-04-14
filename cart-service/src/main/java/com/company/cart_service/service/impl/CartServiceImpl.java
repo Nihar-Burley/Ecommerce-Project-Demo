@@ -1,11 +1,10 @@
 package com.company.cart_service.service.impl;
 
 import com.company.cart_service.client.ProductClient;
-import com.company.cart_service.dto.request.AddToCartRequest;
-import com.company.cart_service.dto.request.CartBulkRequest;
-import com.company.cart_service.dto.request.UpdateCartRequest;
-import com.company.cart_service.dto.response.CartResponse;
-import com.company.cart_service.dto.response.ProductResponse;
+import com.company.common.dto.cart.request.AddToCartRequest;
+import com.company.common.dto.cart.request.CartBulkRequest;
+import com.company.common.dto.cart.request.UpdateCartRequest;
+import com.company.common.dto.cart.response.CartResponse;
 import com.company.cart_service.exception.CartNotFoundException;
 import com.company.cart_service.exception.InsufficientStockException;
 import com.company.cart_service.exception.ProductNotFoundException;
@@ -15,6 +14,8 @@ import com.company.cart_service.model.CartItem;
 import com.company.cart_service.repository.CartItemRepository;
 import com.company.cart_service.repository.CartRepository;
 import com.company.cart_service.service.CartService;
+
+import com.company.common.dto.product.response.ProductResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

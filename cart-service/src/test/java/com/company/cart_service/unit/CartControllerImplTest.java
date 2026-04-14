@@ -1,11 +1,11 @@
 package com.company.cart_service.unit;
 
-import com.company.cart_service.controller.CartController;
-import com.company.cart_service.dto.request.AddToCartRequest;
-import com.company.cart_service.dto.response.CartResponse;
+import com.company.common.dto.cart.request.AddToCartRequest;
+import com.company.common.dto.cart.response.CartResponse;
 import com.company.cart_service.exception.CustomException;
 import com.company.cart_service.service.CartService;
 
+import com.company.common.controller.cart.CartController;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,7 +2,7 @@ package com.company.cart_service.bdd.steps;
 
 import com.company.cart_service.bdd.config.TestContext;
 import com.company.cart_service.client.ProductClient;
-import com.company.cart_service.dto.response.ProductResponse;
+import com.company.common.dto.product.response.ProductResponse;
 
 import com.company.cart_service.exception.CustomException;
 import io.cucumber.java.en.*;

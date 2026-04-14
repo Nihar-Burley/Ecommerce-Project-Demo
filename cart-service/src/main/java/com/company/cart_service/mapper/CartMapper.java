@@ -1,10 +1,10 @@
 package com.company.cart_service.mapper;
 
-import com.company.cart_service.dto.response.CartItemResponse;
-import com.company.cart_service.dto.response.CartResponse;
+
 import com.company.cart_service.model.Cart;
 import com.company.cart_service.model.CartItem;
-import org.springframework.stereotype.Component;
+import com.company.common.dto.cart.response.CartItemResponse;
+import com.company.common.dto.cart.response.CartResponse;
 
 import java.util.List;
 

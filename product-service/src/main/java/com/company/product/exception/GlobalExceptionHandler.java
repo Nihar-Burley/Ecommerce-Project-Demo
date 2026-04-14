@@ -2,6 +2,7 @@ package com.company.product.exception;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -64,6 +65,21 @@ public class GlobalExceptionHandler {
                         .timestamp(LocalDateTime.now())
                         .build()));
     }
+
+    //  ACCESS DENIED
+    @ExceptionHandler(AccessDeniedException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleAccessDenied(AccessDeniedException ex) {
+
+        ErrorResponse error = ErrorResponse.builder()
+                .message("Access Denied")
+                .errorCode("ACCESS_DENIED")
+                .status(403)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(error));
+    }
+
 
     //  BAD REQUEST
     @ExceptionHandler(IllegalArgumentException.class)

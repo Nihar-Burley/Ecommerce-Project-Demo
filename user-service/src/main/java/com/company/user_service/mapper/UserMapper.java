@@ -1,6 +1,6 @@
 package com.company.user_service.mapper;
 
-import com.company.user_service.dto.response.UserResponse;
+import com.company.common.dto.user.response.UserResponse;
 import com.company.user_service.entity.User;
 
 public class UserMapper {

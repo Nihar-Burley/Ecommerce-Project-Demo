@@ -1,7 +1,9 @@
 package com.company.user_service.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -49,6 +51,21 @@ public class GlobalExceptionHandler {
                 .build();
 
         return Mono.just(ResponseEntity.badRequest().body(error));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleAccessDenied(AccessDeniedException ex) {
+
+        log.error("Access denied: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .message("Access Denied")
+                .errorCode("ACCESS_DENIED")
+                .status(403)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(error));
     }
 
     // Generic Exception

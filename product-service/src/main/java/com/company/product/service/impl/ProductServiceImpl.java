@@ -1,7 +1,7 @@
 package com.company.product.service.impl;
 
-import com.company.product.dto.request.ProductRequest;
-import com.company.product.dto.response.ProductResponse;
+import com.company.common.dto.product.request.ProductRequest;
+import com.company.common.dto.product.response.ProductResponse;
 import com.company.product.entity.Product;
 import com.company.product.exception.ResourceNotFoundException;
 import com.company.product.mapper.ProductMapper;
@@ -9,6 +9,7 @@ import com.company.product.repository.ProductRepository;
 import com.company.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

@@ -1,10 +1,10 @@
 package com.company.cart_service.service;
 
 
-import com.company.cart_service.dto.request.AddToCartRequest;
-import com.company.cart_service.dto.request.CartBulkRequest;
-import com.company.cart_service.dto.request.UpdateCartRequest;
-import com.company.cart_service.dto.response.CartResponse;
+import com.company.common.dto.cart.request.AddToCartRequest;
+import com.company.common.dto.cart.request.CartBulkRequest;
+import com.company.common.dto.cart.request.UpdateCartRequest;
+import com.company.common.dto.cart.response.CartResponse;
 import reactor.core.publisher.Mono;
 
 public interface CartService {

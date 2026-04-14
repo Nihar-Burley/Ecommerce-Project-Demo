@@ -1,6 +1,6 @@
 package com.company.product.unit;
 
-import com.company.product.dto.request.ProductRequest;
+import com.company.common.dto.product.request.ProductRequest;
 import com.company.product.entity.Product;
 import com.company.product.exception.ResourceNotFoundException;
 import com.company.product.repository.ProductRepository;

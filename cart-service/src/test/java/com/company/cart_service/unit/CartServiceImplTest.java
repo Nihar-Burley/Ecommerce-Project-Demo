@@ -1,9 +1,9 @@
 package com.company.cart_service.unit;
 
 import com.company.cart_service.client.ProductClient;
-import com.company.cart_service.dto.request.AddToCartRequest;
-import com.company.cart_service.dto.request.UpdateCartRequest;
-import com.company.cart_service.dto.response.ProductResponse;
+import com.company.common.dto.cart.request.AddToCartRequest;
+import com.company.common.dto.cart.request.UpdateCartRequest;
+import com.company.common.dto.cart.response.ProductResponse;
 import com.company.cart_service.exception.CartNotFoundException;
 import com.company.cart_service.exception.InsufficientStockException;
 import com.company.cart_service.exception.ProductNotFoundException;

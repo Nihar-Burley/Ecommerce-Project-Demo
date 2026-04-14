@@ -155,7 +155,29 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Approve User (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "ADMIN"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/2/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "2", "approve"]
+            }
+          }
         }
+
       ]
     },
     {

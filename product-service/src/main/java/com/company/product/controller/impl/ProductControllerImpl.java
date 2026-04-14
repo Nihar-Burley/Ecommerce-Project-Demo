@@ -1,8 +1,8 @@
 package com.company.product.controller.impl;
 
-import com.company.product.controller.ProductController;
-import com.company.product.dto.request.ProductRequest;
-import com.company.product.dto.response.ProductResponse;
+import com.company.common.controller.product.ProductController;
+import com.company.common.dto.product.request.ProductRequest;
+import com.company.common.dto.product.response.ProductResponse;
 import com.company.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;

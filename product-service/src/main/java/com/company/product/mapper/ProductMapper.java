@@ -1,7 +1,7 @@
 package com.company.product.mapper;
 
-import com.company.product.dto.request.ProductRequest;
-import com.company.product.dto.response.ProductResponse;
+import com.company.common.dto.product.request.ProductRequest;
+import com.company.common.dto.product.response.ProductResponse;
 import com.company.product.entity.Product;
 
 import java.time.LocalDateTime;

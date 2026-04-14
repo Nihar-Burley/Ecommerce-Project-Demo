@@ -11,6 +11,7 @@
         <module name="product-service" />
         <module name="cart-service" />
         <module name="user-service" />
+        <module name="common-lib" />
         <module name="discovery-service" />
       </profile>
     </annotationProcessing>
@@ -23,6 +24,7 @@
       <module name="api-gateway" options="-parameters" />
       <module name="api-gateway-service" options="-parameters" />
       <module name="cart-service" options="-parameters" />
+      <module name="common-lib" options="-parameters" />
       <module name="discovery-service" options="-parameters" />
       <module name="product-service" options="-parameters" />
       <module name="user-service" options="-parameters" />

@@ -1,10 +1,10 @@
 package com.company.user_service.controller.impl;
 
-import com.company.user_service.controller.UserController;
-import com.company.user_service.dto.request.LoginRequest;
-import com.company.user_service.dto.request.RegisterRequest;
-import com.company.user_service.dto.response.LoginResponse;
-import com.company.user_service.dto.response.UserResponse;
+import com.company.common.controller.user.UserController;
+import com.company.common.dto.user.request.LoginRequest;
+import com.company.common.dto.user.request.RegisterRequest;
+import com.company.common.dto.user.response.LoginResponse;
+import com.company.common.dto.user.response.UserResponse;
 import com.company.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +47,12 @@ public class UserControllerImpl implements UserController {
     public Mono<Void> deleteUser(Long id) {
         log.info("API: Delete user {}", id);
         return userService.deleteUser(id);
+    }
+
+    @Override
+    public Mono<UserResponse> approveUser(Long id) {
+        log.info("API: Approve user {}", id);
+
+        return userService.approveUser(id);
     }
 }

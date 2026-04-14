@@ -1,6 +1,5 @@
 package com.company.user_service.config;
 
-import com.company.user_service.exception.CustomException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    // Generate Token
+    // ================= GENERATE TOKEN =================
     public String generateToken(String email, String role, Long userId) {
 
         log.info("Generating JWT for user: {}", email);
@@ -40,4 +39,51 @@ public class JwtUtil {
                 .compact();
     }
 
+    // ================= EXTRACT CLAIMS =================
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public Date extractExpiration(String token) {
+        return extractAllClaims(token).getExpiration();
+    }
+
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
+    }
+
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    // ================= VALIDATION =================
+    public boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            extractAllClaims(token);
+            return !isTokenExpired(token);
+
+        } catch (ExpiredJwtException e) {
+            log.error("JWT expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("Unsupported JWT: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("Malformed JWT: {}", e.getMessage());
+        }  catch (IllegalArgumentException e) {
+            log.error("JWT token is empty or null: {}", e.getMessage());
+        }
+
+        return false;
+    }
 }

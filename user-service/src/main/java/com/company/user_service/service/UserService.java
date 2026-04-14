@@ -1,10 +1,10 @@
 package com.company.user_service.service;
 
 
-import com.company.user_service.dto.request.LoginRequest;
-import com.company.user_service.dto.request.RegisterRequest;
-import com.company.user_service.dto.response.LoginResponse;
-import com.company.user_service.dto.response.UserResponse;
+import com.company.common.dto.user.request.LoginRequest;
+import com.company.common.dto.user.request.RegisterRequest;
+import com.company.common.dto.user.response.LoginResponse;
+import com.company.common.dto.user.response.UserResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -19,4 +19,6 @@ public interface UserService {
     Mono<Void> deleteUser(Long id);
 
     Mono<LoginResponse> login(LoginRequest request);
+
+    Mono<UserResponse> approveUser(Long id);
 }

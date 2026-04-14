@@ -1,10 +1,10 @@
-/*
-INSERT INTO users (id, username, email, password, role, created_at, updated_at)
-VALUES
-(1, 'nihar', 'nihar@gmail.com', '$2a$10$Dow1yJ9k8F3r8wS3zQeZ2O6yXyXy8K1z6pQ9z0F6k8Jz1K7m7VYyG', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-
-(2, 'rahul', 'rahul@gmail.com', '$2a$10$Dow1yJ9k8F3r8wS3zQeZ2O6yXyXy8K1z6pQ9z0F6k8Jz1K7m7VYyG', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-
-(3, 'admin', 'admin@company.com', '$2a$10$Dow1yJ9k8F3r8wS3zQeZ2O6yXyXy8K1z6pQ9z0F6k8Jz1K7m7VYyG', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-*/
+INSERT INTO users (username, email, password, role, status, created_at, updated_at)
+VALUES (
+  'admin',
+  'admin@company.com',
+  '$2a$10$e74w46CKgHrrGIqzycQDM.3dcLzkwfstcs23s30Sj5R5LjVv8E7z6',
+  'ADMIN',
+  'APPROVED',
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+);

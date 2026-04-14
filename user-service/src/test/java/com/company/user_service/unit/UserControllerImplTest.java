@@ -1,6 +1,5 @@
 package com.company.user_service.unit;
 
-import com.company.user_service.controller.UserController;
 import com.company.user_service.dto.request.LoginRequest;
 import com.company.user_service.dto.request.RegisterRequest;
 import com.company.user_service.dto.response.LoginResponse;
